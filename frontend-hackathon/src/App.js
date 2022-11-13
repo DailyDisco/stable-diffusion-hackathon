@@ -3,6 +3,7 @@
 import HTMLFlipBook from 'react-pageflip';
 import React, { useState, useEffect, useRef } from 'react';
 
+// PageCover is the first and last page of the book
 const PageCover = React.forwardRef((props, ref) => {
   return (
     <div className='page page-cover' ref={ref} data-density='hard'>
@@ -13,6 +14,7 @@ const PageCover = React.forwardRef((props, ref) => {
   );
 });
 
+// Page is the page of the book and contains the image, text, and page number
 const Page = React.forwardRef((props, ref) => {
   return (
     <div className='page' ref={ref}>
@@ -29,24 +31,28 @@ const Page = React.forwardRef((props, ref) => {
 });
 
 function App(props) {
-  // const chunk = useState('This is a test');
   const pages = useState(0);
+  // totalPages is the total number of pages in the book
   const totalPages = useState(0);
   const ref = useRef();
 
+  // flipBook is the book itself
   let flipBook = () => {
     flipBook.getPageFlip().getPageCount();
   };
 
+  // this is the function that will be called when the user clicks on the button
   const nextButtonClick = (props, chunk) => {
     // console.log(props);
     return flipBook.getPageFlip().flipNext();
   };
 
+  // this is the function that will be called when the user clicks the previous button
   const prevButtonClick = () => {
     return flipBook.getPageFlip().flipPrev();
   };
 
+  // This will run whenever the page is flipped and will push the new text and image to the page and to the backend server api's
   // useEffect(() => {
   //   // chunk.current = 'This is a test';
   //   // e.preventDefault();
@@ -104,7 +110,9 @@ function App(props) {
           className='demo-book'
           ref={(el) => (flipBook = el)}
         >
+          {/* this next page is the cover */}
           <PageCover>BOOK TITLE</PageCover>
+          {/* page number hold the text as children */}
           <Page number={1}>
             Alice was beginning to get very tired of sitting by her sister on
             the bank, and of having nothing to do: once or twice she had peeped
@@ -197,6 +205,7 @@ function App(props) {
           </Page>
           <Page number={9}>Lorem ipsum...</Page>
           <Page number={10}>Lorem ipsum...</Page>
+          {/* this next line is the last page */}
           <PageCover>THE END</PageCover>
         </HTMLFlipBook>
         <div>
