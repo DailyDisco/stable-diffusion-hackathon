@@ -43,7 +43,7 @@ function App(props, ImageSource) {
   const [audio, setAudio] = useState(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioLoaded, setAudioLoaded] = useState(false);
-  const [title, setTitle] = useState(null);
+  const [title, setTitle] = useState('');
 
   // flipBook is the book itself
   let flipBook = () => {
