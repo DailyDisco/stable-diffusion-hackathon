@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 // import Pages from './Pages';
 import HTMLFlipBook from 'react-pageflip';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const PageCover = React.forwardRef((props, ref) => {
   return (
@@ -19,7 +19,9 @@ const Page = React.forwardRef((props, ref) => {
       <div className='page-content'>
         <h2 className='page-header'>Page header - {props.number}</h2>
         <div className='page-image'></div>
-        <div className='page-text'>{props.children}</div>
+        <div ref={ref} className='page-text'>
+          {props.children}
+        </div>
         <div className='page-footer'>{props.number + 1}</div>
       </div>
     </div>
@@ -27,14 +29,17 @@ const Page = React.forwardRef((props, ref) => {
 });
 
 function App(props) {
-  // const [page, setPage] = useState(null);
-  // const [totalPages, setTotalPages] = useState(0);
-
+  // const chunk = useState('This is a test');
   const pages = useState(0);
   const totalPages = useState(0);
-  // const [pages, setPages] = useState<ReactElement[]>([]);
+  const ref = useRef();
 
-  const nextButtonClick = () => {
+  let flipBook = () => {
+    flipBook.getPageFlip().getPageCount();
+  };
+
+  const nextButtonClick = (props, chunk) => {
+    // console.log(props);
     return flipBook.getPageFlip().flipNext();
   };
 
@@ -42,15 +47,41 @@ function App(props) {
     return flipBook.getPageFlip().flipPrev();
   };
 
+  // useEffect(() => {
+  //   // chunk.current = 'This is a test';
+  //   // e.preventDefault();
+  //   const formData = new FormData();
+  //   formData.append('textUpload', chunk);
+  //   fetch('http://127.0.0.1:5000/generate_sentiment', {
+  //     method: 'POST',
+  //     headers: {
+  //       // 'Content-Type': 'application/json',
+  //     },
+  //     body: formData,
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       console.log(data);
+  //       return data;
+  //     })
+  //     .then((data) => {
+  //       // loop through the data to turn it into an array
+  //       const arr = Object.keys(data).map((key) => data[key]);
+  //       console.log(arr);
+  //     })
+  //     .then((result) => {
+  //       console.log('Success:', result);
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error:', error);
+  //     });
+  // }, []);
+
   // const onPage = (e) => {
   //   this.setState({
   //     page: e.data,
   //   });
   // };
-
-  let flipBook = () => {
-    flipBook.getPageFlip().getPageCount();
-  };
 
   return (
     <div>
@@ -174,9 +205,11 @@ function App(props) {
           </button>
           [<span>{pages}</span> of
           <span>{totalPages}</span>]
-          <button type='button' onClick={nextButtonClick}>
-            Next page
-          </button>
+          <div>
+            <button type='button' onClick={nextButtonClick}>
+              Next page
+            </button>
+          </div>
         </div>
       </div>
     </div>

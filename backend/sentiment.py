@@ -1,5 +1,6 @@
 import spacy 
 import text2emotion as te
+from .musicPrompting import mubertPrompt
 # Found about text2emotion here: https://towardsdatascience.com/text2emotion-python-package-to-detect-emotions-from-textual-data-b2e7b7ce1153
 # Will use, maybe will enhance it with synonym. Also, Today, the average sentence length is between 15 and 20 words. https://becomeawritertoday.com/average-sentence-length/
 

@@ -22,9 +22,10 @@ MarkupSafe==2.1.1
 murmurhash==1.0.9
 nltk==3.7
 numpy==1.23.4
+openai
 packaging==21.3
 pathy==0.6.2
-pkg_resources==0.0.0
+# pkg_resources==0.0.0
 preshed==3.0.8
 pydantic==1.10.2
 pyparsing==3.0.9
