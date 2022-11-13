@@ -13,7 +13,7 @@ from flask_cors import CORS
 from sentiment import Reader
 import spacy 
 import text2emotion as te
-from .musicPrompting import mubertPrompt
+from musicPrompting import mubertPrompt
 # music generation
 from music import get_track_by_tags
 import httpx
@@ -29,24 +29,23 @@ load_dotenv()
 replicate.api_key = os.getenv("REPLICATE_API_KEY")
 
 # api endpoint sentiment analysis
-@app.route('/generate_sentiment, methods=['POST'])
-def generate_prompts(chunk):
+@app.route('/generate_sentiment', methods=['POST'])
+def generate_prompts():
     # takes in route and title
-    #reader = Reader(book_route, book_title)
-    #chunks = reader.get_chunk()
-    #title = chunk[0]
-    reader = Reader()
-    image_prompt = reader.generate_image_prompt(chunk)
-    audio_prompt = mubertPrompt(current_chunk)
+    reader = Reader("books/the_iliad.txt", "illiad")
+    chunks = reader.get_chunks()
+    image_prompt = reader.generate_image_prompt(chunks[0])
+    # audio_prompt = mubertPrompt(current_chunk)
 
+    # "audio":audio_prompt
     prompt_dict = {
         "image":image_prompt, 
-        "audio":audio_prompt}
+    }
     return prompt_dict
     
 # returns a url to an image
 # api endpoint image generation
-@app.route('/generate_image, methods=['POST', 'GET'])
+@app.route('/generate_image', methods=['POST', 'GET'])
 def generate_image():
     # get the text from the request
     # model is set to the stable diffusion model
@@ -64,7 +63,8 @@ def generate_image():
 # returns a url to a music file
 @app.route('/generate_music', methods=['POST', 'GET'])
 def generate_music():
-    return music_prompt
+    music = get_track_by_tags("Happy")
+    return music
 
 # api endpoint for images and music generation
 # returns a url to an image and a url to a music file

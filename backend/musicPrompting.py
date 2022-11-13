@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-openai.organization = "org-nbdjhImDsCphzU9Z3cDknm68"
+# openai.organization = "org-nbdjhImDsCphzU9Z3cDknm68"
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def mubertPrompt(story_excerpt):
@@ -48,6 +48,7 @@ def mubertPrompt(story_excerpt):
     ## TODO: Save music
     # The name should reflect the tags given to MuBert
     music_mp3_path = f"music/{music_tag}.mp3"
-    print(music_mp3_path)
 
-    return music_mp3_path
+    return music_mp3_path, music_tag
+    print(music_mp3_path, music_tag)
+    print(response['choices'])

@@ -20,7 +20,7 @@ pat = "dHRtLjE3MzY2NDM0LjQ5NTFmNjQyOGU4MzE3MmE0ZjM5ZGUwNWQ1YjNhYjEwZDU4NTYwYjguM
 
 def get_track_by_tags(emotions, duration=30, maxit=20, autoplay=False, loop=True): # generates mp3 file
   tags = []
-  for emotion in emotions.split(' ')[0:-1]:
+  for emotion in emotions.rstrip().split(' '):
     tags.extend(tag_mapping[emotion]) 
   if loop:
     mode = "loop"
