@@ -46,7 +46,7 @@ def generate_prompts():
         "image_prompts": image_prompts, 
         "audio_prompts": audio_prompts,
     }
-    return prompt_dict
+    return json.dumps(prompt_dict)
     
 # returns a url to an image
 # api endpoint image generation
