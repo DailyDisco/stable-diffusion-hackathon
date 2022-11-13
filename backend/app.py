@@ -104,5 +104,10 @@ def generate_image_and_music(image_prompt, audio_prompt, title):
     music = get_track_by_tags(audio_prompt)
     print(music)
     print(output_url)
+    url_dict = {
+        'output_url': output_url,
+        'music_url': music
+    }   
+        
     # webbrowser.open(output_url)
-    return {'output_url': output_url, 'music': music}
+    return json.dumps(url_dict)

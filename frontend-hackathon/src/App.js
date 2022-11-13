@@ -30,18 +30,16 @@ const Page = React.forwardRef((props, ref) => {
   );
 });
 
-function App(props) {
+function App(props, ImageSource) {
   const pages = useState(0);
+  const [allAiUrls, setAllAiUrls] = useState([]);
+  const [page, setPage] = useState(0);
   // totalPages is the total number of pages in the book
-  const totalPages = useState(0);
   const [data, setData] = useState(null);
   const [allPages, setAllPages] = useState(0);
-  const [page1, setPage1] = useState(0);
-  const [page2, setPage2] = useState(0);
-  const [page3, setPage3] = useState(0);
-  const [page4, setPage4] = useState(0);
-  const [page5, setPage5] = useState(0);
-  const [page6, setPage6] = useState(0);
+  const [allArguments, setAllArguments] = useState([]);
+  const totalPages = useState(0);
+  const [audioSource, setAudioSource] = useState(null);
 
   // flipBook is the book itself
   let flipBook = () => {
@@ -49,83 +47,80 @@ function App(props) {
   };
 
   // this is the function that will be called when the user clicks on the button
-  // const nextButtonClick = (props, chunk) => {
-  //   // console.log(props);
-  //   return flipBook.getPageFlip().flipNext();
-  // };
+  const nextButtonClick = (props, chunk) => {
+    // console.log(props);
+    return flipBook.getPageFlip().flipNext();
+  };
 
-  // // this is the function that will be called when the user clicks the previous button
-  // const prevButtonClick = () => {
-  //   return flipBook.getPageFlip().flipPrev();
-  // };
+  // this is the function that will be called when the user clicks the previous button
+  const prevButtonClick = () => {
+    return flipBook.getPageFlip().flipPrev();
+  };
 
-  // This will run whenever the page is flipped and will push the new text and image to the page and to the backend server api's
-  // useEffect(() => {
-  //   // chunk.current = 'This is a test';
-  //   // e.preventDefault();
-  //   // const formData = new FormData();
-  //   // formData.append('textUpload', chunk);
-  //   fetch('http://127.0.0.1:5000/generate_chunks', {
-  //     method: 'POST',
-  //     headers: {
-  //       // 'Content-Type': 'application/json',
-  //     },
-  //   })
-  //     // body: JSON.stringify(),
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       console.log(data);
-  //       return data;
-  //     })
-  //     .then((data) => {
-  //       // loop through the data to turn it into an array
-  //       const arr = Object.keys(data).map((key) => data[key]);
-  //       let page1 = arr[0][0];
-  //       console.log(arr);
-  //     })
-  //     .then((result) => {
-  //       console.log('Success:', result);
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error:', error);
-  //     });
-  // }, []);
+  const fetchData = async () => {
+    console.log('fetching data');
+    const response = await fetch('http://127.0.0.1:5000/generate_chunks');
+    const json = await response.json();
+    console.log(json);
+    let arr = Object.keys(json).map((key) => json[key]);
+    console.log('holds all get_chunk returns', arr);
+    console.log(arr[0]);
+    setAllArguments([...arr]);
+    console.log('music tags for each chunk', arr[0][0]);
+    console.log('chunks', arr[1]);
+    console.log('text for page', arr[1][0]);
+    setAllPages([...arr[1]]);
+    console.log('all pages', allPages);
+    return arr;
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      console.log('fetching data');
-      const response = await fetch('http://127.0.0.1:5000/generate_chunks');
-      const json = await response.json();
-      console.log(json);
-      let arr = Object.keys(json).map((key) => json[key]);
-      console.log('holds all get_chunk returns', arr);
-      console.log(arr[0]);
-      console.log('music tags for each chunk', arr[0][0]);
-      console.log('chunks', arr[1]);
-      console.log('text for page', arr[1][0]);
-      setPage1(arr[1][4]);
-      setAllPages([...arr[1]]);
-      console.log('all pages', allPages);
-      // map = arr[1].map((page) => {
-      //   console.log(page);
-      //   return page;
-      // });
-    };
+    // by using a function here we can run this use effect simply once and only load the chunks once
     fetchData();
-  }, [allPages, data, props.id]);
+    // eslint-disable-next-line
+  }, []);
 
-  if (data) {
-    console.log(data);
-    const arr = Object.keys(data).map((key) => data[key]);
-    let page1 = arr[0][0];
-    console.log(page1);
-  }
+  const onPage = (e, arr) => {
+    const fetchAI = async () => {
+      const formData = new FormData();
+      formData.append('image_prompt', allArguments[0][5][0]);
+      formData.append('audio_prompt', allArguments[1][5]);
+      formData.append('text_prompt', allArguments[2]);
+      console.log('formData', formData);
+      JSON.stringify(formData);
+      console.log('json', formData);
 
-  // const onPage = (e) => {
-  //   this.setState({
-  //     page: e.data,
-  //   });
-  // };
+      fetch('http://127.0.0.1:5000/generate_image_and_music', {
+        method: 'POST',
+        headers: {
+          // 'Content-Type': 'application/json',
+        },
+        body: formData,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data);
+          return data;
+        })
+        .then((data) => {
+          // loop through the data to turn it into an array
+          const arr = Object.keys(data).map((key) => data[key]);
+          console.log(arr);
+          setAllAiUrls(arr[0][0]);
+          console.log('all ai urls', allAiUrls);
+          setAudioSource();
+          // setImageSource();
+        })
+        .then((result) => {
+          console.log('Success:', result);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    };
+    fetchAI();
+    setPage(e.data);
+  };
 
   return (
     <div>
@@ -142,7 +137,7 @@ function App(props) {
           maxShadowOpacity={0.5}
           showCover={true}
           mobileScrollSupport={true}
-          // onFlip={totalPages}
+          onFlip={onPage}
           // onChangeOrientation={this.onChangeOrientation}
           // onChangeState={this.onChangeState}
           className='demo-book'
@@ -152,6 +147,13 @@ function App(props) {
           <PageCover>BOOK TITLE</PageCover>
           {/* page number hold the text as children */}
           <Page number={1}>{allPages[4]}</Page>
+          <Page number={11}>
+            <img src={ImageSource} alt='stableDiffusion'></img>
+            <audio controls>
+              <source src={audioSource} type='audio/ogg'></source>
+              Your browser does not support the audio tag.
+            </audio>
+          </Page>
           <Page number={2}>{allPages[5]}</Page>
           <Page number={3}>{allPages[6]}</Page>
           <Page number={4}>{allPages[7]}</Page>
@@ -164,7 +166,7 @@ function App(props) {
           {/* this next line is the last page */}
           <PageCover>THE END</PageCover>
         </HTMLFlipBook>
-        {/* <div>
+        <div>
           <button type='button' onClick={prevButtonClick}>
             Previous page
           </button>
@@ -175,7 +177,7 @@ function App(props) {
               Next page
             </button>
           </div>
-        </div> */}
+        </div>
       </div>
     </div>
   );
