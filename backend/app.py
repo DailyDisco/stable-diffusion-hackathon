@@ -1,5 +1,6 @@
 import torch
 import os
+import ast
 # .env
 from dotenv import load_dotenv
 # replicate AI image generator
@@ -19,10 +20,13 @@ from music import get_track_by_tags
 import httpx
 import json
 import time
+import logging
 
 # flask is a web framework for python that allows us to create a web server and handle requests from the frontend to the backend
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
+
+logging.basicConfig(level=logging.DEBUG)
 
 # initiate .env
 load_dotenv()
@@ -92,22 +96,50 @@ def generate_chunks():
     }
     return prompt_dict
 
-# api endpoint for images and music generation
-# returns a url to an image and a url to a music file
-@app.route('/generate_image_and_music', methods=['POST', 'GET'])
-def generate_image_and_music(image_prompt, audio_prompt, title):
-    # takes in route and title
-
+def queryReplicate(title, image_prompt, audio_prompt):
+    # model is set to the stable diffusion model
     model = replicate.models.get("stability-ai/stable-diffusion")
     input_str = "Make an award winning illustration from the book " + title  + " using the following text: " + image_prompt
+    # output_url is the url to the image
     output_url = model.predict(prompt=input_str)[0]
+    # print the url to the image
+    app.logger.info('Replicate output URL', output_url)
+    # open the url to the image
+    webbrowser.open(output_url)
     music = get_track_by_tags(audio_prompt)
-    print(music)
-    print(output_url)
     url_dict = {
         'output_url': output_url,
         'music_url': music
-    }   
-        
-    # webbrowser.open(output_url)
-    return json.dumps(url_dict)
+    } 
+    # return the url to the image for the API frontend connection
+    return url_dict
+
+# api endpoint for images and music generation
+# returns a url to an image and a url to a music file
+@app.route('/generate_image_and_music', methods=['POST', 'GET'])
+def generate_image_and_music():
+    if request.method == "POST":
+        # Parse formData from request body as JSON
+        data = request.get_json()
+        #print(request)
+        #print(data)
+        #print(type(data))
+        #with open('data.json', 'r') as outfile:
+        #    dictData = outfile.read()
+        #    print(dictData)
+            
+            
+        #app.logger.info('This is info output', data)
+        audio_prompt = data['audio_prompt']
+        print(audio_prompt)
+        image_prompt = data['image_prompt']
+        print(image_prompt)
+        title = data['title']
+        print(title)
+        # Log data
+        #app.logger.info('This is info output', title, image_prompt, audio_prompt)
+        url_dict = queryReplicate(title, image_prompt, audio_prompt)
+        # webbrowser.open(output_url)
+        return json.dumps(url_dict)
+    else:
+        return "This is a POST request only"

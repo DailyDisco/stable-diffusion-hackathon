@@ -21,9 +21,10 @@ pat = "dHRtLjE3MzY2NDM0LjQ5NTFmNjQyOGU4MzE3MmE0ZjM5ZGUwNWQ1YjNhYjEwZDU4NTYwYjguM
 # can we make this fade in or fade out later?
 def get_track_by_tags(emotions, duration=45, maxit=20, autoplay=False, loop=True): # generates mp3 file
   tags = []
-  for emotion in emotions:
+  for emotion in emotions.split(","):
     # .rstrip()'.split(' ')
     tags.extend(tag_mapping.get(emotion, [emotion])) 
+  print(tags)
   if loop:
     mode = "loop"
   else:

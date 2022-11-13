@@ -37,7 +37,7 @@ function App(props, ImageSource) {
   // totalPages is the total number of pages in the book
   const [data, setData] = useState(null);
   const [allPages, setAllPages] = useState(0);
-  const [allArguments, setAllArguments] = useState([]);
+  const [allArguments, setAllArguments] = useState('');
   const totalPages = useState(0);
   const [audioSource, setAudioSource] = useState(null);
   const [audio, setAudio] = useState(null);
@@ -88,22 +88,25 @@ function App(props, ImageSource) {
   }, []);
 
   // this runs when the page is flipped and it sends a post request to get the image and music for the page
-  const onPage = (e, arr) => {
+  const onPage = (e, arr, res) => {
     const fetchAI = async () => {
-      const formData = new FormData();
-      formData.append('image_prompt', allArguments[0][5][0]);
-      formData.append('audio_prompt', allArguments[1][5]);
-      formData.append('text_prompt', allArguments[2]);
-      console.log('formData', formData);
-      JSON.stringify(formData);
-      console.log('json', formData);
+      // event.preventDefault();
 
+      const dataInput = {
+        title: allArguments[2],
+        image_prompt: allArguments[2],
+        audio_prompt: allArguments[0][5][0],
+      };
+      console.log('type' + typeof dataInput);
       fetch('http://127.0.0.1:5000/generate_image_and_music', {
         method: 'POST',
-        headers: {
-          // 'Content-Type': 'application/json',
-        },
-        body: formData,
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          // 'Content-Type': 'multipart/form-data',
+        }),
+        body: JSON.stringify({
+          ...dataInput,
+        }),
       })
         .then((res) => res.json())
         .then((data) => {
@@ -114,20 +117,21 @@ function App(props, ImageSource) {
           // loop through the data to turn it into an array
           const arr = Object.keys(data).map((key) => data[key]);
           console.log(arr);
-          setAllAiUrls(arr[0][0]);
-          console.log('all ai urls', allAiUrls);
-          setAudioSource();
-          // setImageSource();
+          console.log(arr[0]);
+          setAllAiUrls([...arr]);
+          console.log(allAiUrls[0]);
         })
         .then((result) => {
           console.log('Success:', result);
         })
         .catch((error) => {
           console.error('Error:', error);
+          console.log('Error Data', data);
         });
     };
     fetchAI();
     setPage(e.data);
+    return res;
   };
 
   return (
@@ -155,7 +159,15 @@ function App(props, ImageSource) {
           <PageCover className='flex flex-auto text-xl'>{title[0]}</PageCover>
           {/* page number hold the text as children */}
           <Page number={1}>{allPages[4]}</Page>
-          <Page number={2}>{allPages[5]}</Page>
+          <Page number={2}>
+            <img src={allAiUrls[0]} alt='ai generation'></img>
+          </Page>
+          <Page number={11}>
+            <img src={allAiUrls[0]} alt='stableDiffusion'></img>
+            {allAiUrls[1] !== null ? (
+              <audio src={allAiUrls} controls></audio>
+            ) : null}
+          </Page>
           <Page number={3}>{allPages[6]}</Page>
           <Page number={4}>{allPages[7]}</Page>
           <Page number={5}>{allPages[8]}</Page>
@@ -164,10 +176,6 @@ function App(props, ImageSource) {
           <Page number={8}>{allPages[11]}</Page>
           <Page number={9}>{allPages[12]}</Page>
           <Page number={10}>{allPages[13]}</Page>
-          <Page number={11}>
-            <img src={ImageSource} alt='stableDiffusion'></img>
-            {audio !== null ? <audio src={audioSource} controls></audio> : null}
-          </Page>
           {/* this next line is the last page */}
           <PageCover>THE END</PageCover>
         </HTMLFlipBook>
