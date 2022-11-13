@@ -40,22 +40,26 @@ function App(props, ImageSource) {
   const [allArguments, setAllArguments] = useState([]);
   const totalPages = useState(0);
   const [audioSource, setAudioSource] = useState(null);
+  const [audio, setAudio] = useState(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioLoaded, setAudioLoaded] = useState(false);
+  const [title, setTitle] = useState(null);
 
   // flipBook is the book itself
   let flipBook = () => {
     flipBook.getPageFlip().getPageCount();
   };
 
-  // this is the function that will be called when the user clicks on the button
-  const nextButtonClick = (props, chunk) => {
-    // console.log(props);
-    return flipBook.getPageFlip().flipNext();
-  };
+  // // this is the function that will be called when the user clicks on the button
+  // const nextButtonClick = (props, chunk) => {
+  //   // console.log(props);
+  //   return flipBook.getPageFlip().flipNext();
+  // };
 
-  // this is the function that will be called when the user clicks the previous button
-  const prevButtonClick = () => {
-    return flipBook.getPageFlip().flipPrev();
-  };
+  // // this is the function that will be called when the user clicks the previous button
+  // const prevButtonClick = () => {
+  //   return flipBook.getPageFlip().flipPrev();
+  // };
 
   const fetchData = async () => {
     console.log('fetching data');
@@ -65,6 +69,8 @@ function App(props, ImageSource) {
     let arr = Object.keys(json).map((key) => json[key]);
     console.log('holds all get_chunk returns', arr);
     console.log(arr[0]);
+    console.log(arr[2]);
+    setTitle([arr[2]]);
     setAllArguments([...arr]);
     console.log('music tags for each chunk', arr[0][0]);
     console.log('chunks', arr[1]);
@@ -74,12 +80,14 @@ function App(props, ImageSource) {
     return arr;
   };
 
+  // this runs at the start of the web load and calls the fetchData function, which calls the backend chunks (stories)
   useEffect(() => {
     // by using a function here we can run this use effect simply once and only load the chunks once
     fetchData();
     // eslint-disable-next-line
   }, []);
 
+  // this runs when the page is flipped and it sends a post request to get the image and music for the page
   const onPage = (e, arr) => {
     const fetchAI = async () => {
       const formData = new FormData();
@@ -144,16 +152,9 @@ function App(props, ImageSource) {
           ref={(el) => (flipBook = el)}
         >
           {/* this next page is the cover */}
-          <PageCover>BOOK TITLE</PageCover>
+          <PageCover className='flex flex-auto text-xl'>{title[0]}</PageCover>
           {/* page number hold the text as children */}
           <Page number={1}>{allPages[4]}</Page>
-          <Page number={11}>
-            <img src={ImageSource} alt='stableDiffusion'></img>
-            <audio controls>
-              <source src={audioSource} type='audio/ogg'></source>
-              Your browser does not support the audio tag.
-            </audio>
-          </Page>
           <Page number={2}>{allPages[5]}</Page>
           <Page number={3}>{allPages[6]}</Page>
           <Page number={4}>{allPages[7]}</Page>
@@ -163,10 +164,14 @@ function App(props, ImageSource) {
           <Page number={8}>{allPages[11]}</Page>
           <Page number={9}>{allPages[12]}</Page>
           <Page number={10}>{allPages[13]}</Page>
+          <Page number={11}>
+            <img src={ImageSource} alt='stableDiffusion'></img>
+            {audio !== null ? <audio src={audioSource} controls></audio> : null}
+          </Page>
           {/* this next line is the last page */}
           <PageCover>THE END</PageCover>
         </HTMLFlipBook>
-        <div>
+        {/* <div>
           <button type='button' onClick={prevButtonClick}>
             Previous page
           </button>
@@ -177,7 +182,7 @@ function App(props, ImageSource) {
               Next page
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
