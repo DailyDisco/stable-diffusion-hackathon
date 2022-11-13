@@ -23,21 +23,21 @@ def mubertPrompt(story_excerpt):
     music_tag_prompt= f"""
                         Example tags: {mubert_tags_string}
                         Story excerpt: {story_excerpt}
-                        Let's create a prompt based on the above story using only the "Example Tags":
+                        Classify the text from "Story excerpt" using the following tags from "Example tags":
                     """
     
     ## Send to OpenAI GPT-3 API
     response = openai.Completion.create(
         engine="davinci",
         prompt=music_tag_prompt,
-        temperature=0.9,
+        temperature=0.5,
         max_tokens=40,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0.6,
         stop=["\n"]
     )
-
+    print(response)
     ## Make sure response is under 20 tags and only matches options from mubert_tags_string
     music_tag = response['choices'][0]['text'].strip()
 

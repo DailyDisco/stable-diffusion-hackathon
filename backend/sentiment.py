@@ -21,7 +21,7 @@ class Reader:
     Standard Reader class, has functions for text reading and preprocessing
     """
 
-    def __init__(self, book_path, book_title):
+    def __init__(self, book_path, book_title, tags):
         """
         Initializes class
         """
@@ -31,6 +31,7 @@ class Reader:
         self.book = None
         self.processed_book = None
         self.chunks = None
+        self.tags = tags
     
 
     def save_book(self, book_path=None):
@@ -71,14 +72,14 @@ class Reader:
 
         two_max_values = sorted(emotion_dict.values())[-2:]
 
-        emotion_str = ""
+        emotions = []
         for value in two_max_values:
             for key in emotion_dict.keys():
                 if emotion_dict[key] == value:
-                    emotion_str += key + " "
-        return emotion_str
+                    emotions.append(key.lower())
+        return list(set(emotions))
 
-    def get_chunks(self, spm=16, wps=20):
+    def get_chunks(self, spm=16, wps=20, perc=1.0):
         """
         spm: sentences per minute approx 250/15
         wps: words per sentence
@@ -90,7 +91,9 @@ class Reader:
         if self.processed_book is None:
             processed_book = self.process_book(book=book)
 
+        # len(sentences)*perc gives sentence index that corresponds to perc% of the book
         sentences = list(processed_book.sents)
+        sentences = sentences[:int(len(sentences)*perc)]
 
         chunks = list()
         # First chunk should be book title

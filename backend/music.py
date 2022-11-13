@@ -18,10 +18,12 @@ pat = "dHRtLjE3MzY2NDM0LjQ5NTFmNjQyOGU4MzE3MmE0ZjM5ZGUwNWQ1YjNhYjEwZDU4NTYwYjguM
 #     tags.extend(tag_mapping[emotion])
 #   return tags  
 
-def get_track_by_tags(emotions, duration=30, maxit=20, autoplay=False, loop=True): # generates mp3 file
+# can we make this fade in or fade out later?
+def get_track_by_tags(emotions, duration=45, maxit=20, autoplay=False, loop=True): # generates mp3 file
   tags = []
-  for emotion in emotions.rstrip().split(' '):
-    tags.extend(tag_mapping[emotion]) 
+  for emotion in emotions:
+    # .rstrip()'.split(' ')
+    tags.extend(tag_mapping.get(emotion, [emotion])) 
   if loop:
     mode = "loop"
   else:
