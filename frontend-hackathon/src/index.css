@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.text {
+  @apply text-2xl;
+}
+
+.image {
+  @apply w-32 h-32;
+}
+
+.music {
+  @apply w-32 h-32;
+}

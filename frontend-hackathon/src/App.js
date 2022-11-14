@@ -32,17 +32,13 @@ const Page = React.forwardRef((props, ref) => {
 
 function App(props, ImageSource) {
   const pages = useState(0);
+  const totalPages = useState(0);
   const [allAiUrls, setAllAiUrls] = useState([]);
   const [page, setPage] = useState(0);
   // totalPages is the total number of pages in the book
   const [data, setData] = useState(null);
   const [allPages, setAllPages] = useState(0);
   const [allArguments, setAllArguments] = useState('');
-  const totalPages = useState(0);
-  const [audioSource, setAudioSource] = useState(null);
-  const [audio, setAudio] = useState(null);
-  const [audioPlaying, setAudioPlaying] = useState(false);
-  const [audioLoaded, setAudioLoaded] = useState(false);
   const [title, setTitle] = useState('');
 
   // flipBook is the book itself
@@ -67,18 +63,95 @@ function App(props, ImageSource) {
     const json = await response.json();
     console.log(json);
     let arr = Object.keys(json).map((key) => json[key]);
-    console.log('holds all get_chunk returns', arr);
-    console.log(arr[0]);
-    console.log(arr[2]);
+    console.log(arr);
     setTitle([arr[2]]);
     setAllArguments([...arr]);
     console.log('music tags for each chunk', arr[0][0]);
     console.log('chunks', arr[1]);
     console.log('text for page', arr[1][0]);
     setAllPages([...arr[1]]);
-    console.log('all pages', allPages);
     return arr;
   };
+
+  const fetchEverything = async () => {
+    const dataInput = {
+      title: allArguments[2],
+      image_prompt: allArguments[2],
+      audio_prompt: allArguments[0][5][0],
+    };
+    console.log('type' + typeof dataInput);
+    fetch('http://127.0.0.1:5000/generate_image_and_music', {
+      method: 'POST',
+      headers: new Headers({
+        'Content-Type': 'application/json',
+        // 'Content-Type': 'multipart/form-data',
+      }),
+      body: JSON.stringify({
+        ...dataInput,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        return data;
+      })
+      .then((data) => {
+        // loop through the data to turn it into an array
+        const arr = Object.keys(data).map((key) => data[key]);
+        console.log(arr);
+        console.log(arr[0]);
+        setAllAiUrls([...arr]);
+        console.log(allAiUrls[0]);
+        console.log(allAiUrls[1]);
+      })
+      .then((result) => {
+        console.log('Success:', result);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        console.log('Error Data', data);
+      });
+  };
+  // const fetchAI = async () => {
+  //   // e.preventDefault();
+
+  //   const dataInput = {
+  //     title: allArguments[2],
+  //     image_prompt: allArguments[2],
+  //     audio_prompt: allArguments[0][5][0],
+  //   };
+  //   console.log('type' + typeof dataInput);
+  //   fetch('http://127.0.0.1:5000/generate_image_and_music', {
+  //     method: 'POST',
+  //     headers: new Headers({
+  //       'Content-Type': 'application/json',
+  //       // 'Content-Type': 'multipart/form-data',
+  //     }),
+  //     body: JSON.stringify({
+  //       ...dataInput,
+  //     }),
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       console.log(data);
+  //       return data;
+  //     })
+  //     .then((data) => {
+  //       // loop through the data to turn it into an array
+  //       const arr = Object.keys(data).map((key) => data[key]);
+  //       console.log(arr);
+  //       console.log(arr[0]);
+  //       setAllAiUrls([...arr]);
+  //       console.log(allAiUrls[0]);
+  //     })
+  //     .then((result) => {
+  //       console.log('Success:', result);
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error:', error);
+  //       console.log('Error Data', data);
+  //     });
+  // };
 
   // this runs at the start of the web load and calls the fetchData function, which calls the backend chunks (stories)
   useEffect(() => {
@@ -87,52 +160,16 @@ function App(props, ImageSource) {
     // eslint-disable-next-line
   }, []);
 
-  // this runs when the page is flipped and it sends a post request to get the image and music for the page
-  const onPage = (e, arr, res) => {
-    const fetchAI = async () => {
-      // event.preventDefault();
+  useEffect(() => {
+    setInterval(function () {
+      fetchEverything();
+    }, 30000);
+  }, []);
 
-      const dataInput = {
-        title: allArguments[2],
-        image_prompt: allArguments[2],
-        audio_prompt: allArguments[0][5][0],
-      };
-      console.log('type' + typeof dataInput);
-      fetch('http://127.0.0.1:5000/generate_image_and_music', {
-        method: 'POST',
-        headers: new Headers({
-          'Content-Type': 'application/json',
-          // 'Content-Type': 'multipart/form-data',
-        }),
-        body: JSON.stringify({
-          ...dataInput,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log(data);
-          return data;
-        })
-        .then((data) => {
-          // loop through the data to turn it into an array
-          const arr = Object.keys(data).map((key) => data[key]);
-          console.log(arr);
-          console.log(arr[0]);
-          setAllAiUrls([...arr]);
-          console.log(allAiUrls[0]);
-        })
-        .then((result) => {
-          console.log('Success:', result);
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          console.log('Error Data', data);
-        });
-    };
-    fetchAI();
-    setPage(e.data);
-    return res;
-  };
+  // this runs when the page is flipped and it sends a post request to get the image and music for the page
+  // const onPage = (e) => {
+  //   setPage(e.data);
+  // };
 
   return (
     <div>
@@ -149,7 +186,7 @@ function App(props, ImageSource) {
           maxShadowOpacity={0.5}
           showCover={true}
           mobileScrollSupport={true}
-          onFlip={onPage}
+          // onFlip={onPage}
           // onChangeOrientation={this.onChangeOrientation}
           // onChangeState={this.onChangeState}
           className='demo-book'
@@ -158,25 +195,84 @@ function App(props, ImageSource) {
           {/* this next page is the cover */}
           <PageCover className='flex flex-auto text-xl'>{title[0]}</PageCover>
           {/* page number hold the text as children */}
-          <Page number={1}>{allPages[4]}</Page>
+          <Page number={1}>
+            <div className='text'>{allPages[4]}</div>
+            <div className='image'>
+              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            </div>
+            <div className='music'>
+              {allAiUrls[1] !== null ? (
+                <audio src={allAiUrls[1]} controls></audio>
+              ) : null}
+            </div>
+          </Page>
           <Page number={2}>
-            <img src={allAiUrls[0]} alt='ai generation'></img>
+            <div className='text'>{allPages[4]}</div>
+            <div className='image'>
+              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            </div>
+            <div className='music'>
+              {allAiUrls[1] !== null ? (
+                <audio src={allAiUrls[1]} controls></audio>
+              ) : null}
+            </div>
           </Page>
-          <Page number={11}>
-            <img src={allAiUrls[0]} alt='stableDiffusion'></img>
-            {allAiUrls[1] !== null ? (
-              <audio src={allAiUrls} controls></audio>
-            ) : null}
+          <Page number={3}>
+            <div className='text'>{allPages[4]}</div>
+            <div className='image'>
+              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            </div>
+            <div className='music'>
+              {allAiUrls[1] !== null ? (
+                <audio src={allAiUrls[1]} controls></audio>
+              ) : null}
+            </div>
           </Page>
-          <Page number={3}>{allPages[6]}</Page>
-          <Page number={4}>{allPages[7]}</Page>
-          <Page number={5}>{allPages[8]}</Page>
-          <Page number={6}>{allPages[9]}</Page>
-          <Page number={7}>{allPages[10]}</Page>
-          <Page number={8}>{allPages[11]}</Page>
-          <Page number={9}>{allPages[12]}</Page>
-          <Page number={10}>{allPages[13]}</Page>
           {/* this next line is the last page */}
+          <Page number={4}>
+            <div className='text'>{allPages[4]}</div>
+            <div className='image'>
+              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            </div>
+            <div className='music'>
+              {allAiUrls[1] !== null ? (
+                <audio src={allAiUrls[1]} controls></audio>
+              ) : null}
+            </div>
+          </Page>
+          <Page number={5}>
+            <div className='text'>{allPages[4]}</div>
+            <div className='image'>
+              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            </div>
+            <div className='music'>
+              {allAiUrls[1] !== null ? (
+                <audio src={allAiUrls[1]} controls></audio>
+              ) : null}
+            </div>
+          </Page>
+          <Page number={6}>
+            <div className='text'>{allPages[4]}</div>
+            <div className='image'>
+              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            </div>
+            <div className='music'>
+              {allAiUrls[1] !== null ? (
+                <audio src={allAiUrls[1]} controls></audio>
+              ) : null}
+            </div>
+          </Page>
+          <Page number={7}>
+            <div className='text'>{allPages[4]}</div>
+            <div className='image'>
+              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            </div>
+            <div className='music'>
+              {allAiUrls[1] !== null ? (
+                <audio src={allAiUrls[1]} controls></audio>
+              ) : null}
+            </div>
+          </Page>
           <PageCover>THE END</PageCover>
         </HTMLFlipBook>
         {/* <div>

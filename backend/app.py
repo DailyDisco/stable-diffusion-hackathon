@@ -143,3 +143,24 @@ def generate_image_and_music():
         return json.dumps(url_dict)
     else:
         return "This is a POST request only"
+
+
+@app.route('/generate_book', methods=['POST', 'GET'])
+def generate_book():
+    reader = Reader("books/alice_wonderland.txt", "Alice in Wonderland", tags=["dreamy","funky","psychedelic trance / psytrance"])
+    chunks = reader.get_chunks(perc=0.05)
+
+    #image_prompts = list()
+    #audio_prompts = list()
+    image_urls = list()
+    audio_urls = list()
+
+    for chunk in chunks:
+
+        url_dict = queryReplicate(reader.title, reader.generate_image_prompt(chunk), reader.tags + reader.generate_audio_prompt(chunk))
+        audio_urls.append(url_dict["music_url"])
+        image_urls.append(url_dict["output_url"])
+
+    allObject = {"chunks":chunks, "audio": audio_urls, "image":image_urls}
+
+    return json.dumps(allObject)
