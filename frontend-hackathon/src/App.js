@@ -1,7 +1,10 @@
 /* eslint-disable no-unused-vars */
 // import Pages from './Pages';
 import HTMLFlipBook from 'react-pageflip';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import stableDiffusion from './stableDiffusion.png';
+import secondPage from './secondPage.png';
+import index from './index.css';
 
 // PageCover is the first and last page of the book
 const PageCover = React.forwardRef((props, ref) => {
@@ -24,7 +27,7 @@ const Page = React.forwardRef((props, ref) => {
         <div ref={ref} className='page-text'>
           {props.children}
         </div>
-        <div className='page-footer'>{props.number + 1}</div>
+        {/* <div className='page-footer'>{props.number + 1}</div> */}
       </div>
     </div>
   );
@@ -35,15 +38,28 @@ function App(props, ImageSource) {
   const totalPages = useState(0);
   const [allAiUrls, setAllAiUrls] = useState([]);
   const [page, setPage] = useState(0);
+  // totalPages is the total number of pages in the book
   const [data, setData] = useState(null);
   const [allPages, setAllPages] = useState(0);
   const [allArguments, setAllArguments] = useState('');
   const [title, setTitle] = useState('');
+  const [generatedImage, setGeneratedImage] = useState('');
+  const [musicUrl, setMusicUrl] = useState('');
 
   // flipBook is the book itself
   let flipBook = () => {
     flipBook.getPageFlip().getPageCount();
   };
+
+  // const audioPost = async () => {
+  //   const audioLinksRequestOptions = {
+  //     method: 'POST',
+  //     body: musicUrl,
+  //   };
+  //   fetch('http://127.0.0.1:5050/generate_music', audioLinksRequestOptions)
+  //     .then((response) => response.json())
+  //     .then((data) => this.setAllAudioLinks(data));
+  // };
 
   // // this is the function that will be called when the user clicks on the button
   // const nextButtonClick = (props, chunk) => {
@@ -56,30 +72,43 @@ function App(props, ImageSource) {
   //   return flipBook.getPageFlip().flipPrev();
   // };
 
+  function timeout(delay) {
+    return new Promise((res) => setTimeout(res, delay));
+  }
+
   const fetchData = async () => {
     console.log('fetching data');
     const response = await fetch('http://127.0.0.1:5000/generate_chunks');
+    await timeout(3000);
+    console.log(response);
     const json = await response.json();
     console.log(json);
     let arr = Object.keys(json).map((key) => json[key]);
     console.log(arr);
     setTitle([arr[2]]);
     setAllArguments([...arr]);
+    console.log('all arguments', [...allArguments]);
     console.log('music tags for each chunk', arr[0][0]);
+    console.log('chunks', arr[1]);
     console.log('text for page', arr[1][0]);
-    console.log('title', arr[2]);
     setAllPages([...arr[1]]);
-    console.log('all pages', allPages);
+    console.log('title', arr[2]);
     return arr;
   };
 
   const fetchEverything = async () => {
+    console.log('fetching everything');
+    console.log(allArguments[1]);
     const dataInput = {
       title: allArguments[2],
-      image_prompt: allArguments[2],
-      audio_prompt: allArguments[0][5][0],
+      image_prompt: allArguments[1][0],
+      audio_prompt: allArguments[0][5][2],
     };
+    console.log('title', title);
+    console.log('image prompt', allArguments[1][2]);
+    console.log('audio prompt', allArguments[0][5][0]);
     console.log('type' + typeof dataInput);
+    // await timeout(1000);
     fetch('http://127.0.0.1:5000/generate_image_and_music', {
       method: 'POST',
       headers: new Headers({
@@ -95,15 +124,19 @@ function App(props, ImageSource) {
         console.log(data);
         return data;
       })
-      .then((data) => {
+      .then(async (data) => {
+        await timeout(3000);
         // loop through the data to turn it into an array
         const arr = Object.keys(data).map((key) => data[key]);
         console.log(arr);
         console.log(arr[0]);
+        console.log(arr[1]);
+        console.log(...allArguments[1]);
         setAllAiUrls([...arr]);
-        console.log('all ai urls', allAiUrls);
-        console.log(allAiUrls[0]);
-        console.log(allAiUrls[1]);
+        setGeneratedImage(arr[0]);
+        setMusicUrl(arr[1]);
+        console.log('generated image', generatedImage);
+        console.log('music url', musicUrl);
       })
       .then((result) => {
         console.log('Success:', result);
@@ -117,14 +150,11 @@ function App(props, ImageSource) {
   // this runs at the start of the web load and calls the fetchData function, which calls the backend chunks (stories)
   useEffect(() => {
     // by using a function here we can run this use effect simply once and only load the chunks once
-    fetchData();
+    fetchData().then(async (data) => {
+      await timeout(3000);
+      fetchEverything(data);
+    });
     // eslint-disable-next-line
-  }, []);
-
-  useEffect(() => {
-    setInterval(function () {
-      fetchEverything();
-    }, 30000);
   }, []);
 
   // this runs when the page is flipped and it sends a post request to get the image and music for the page
@@ -134,7 +164,6 @@ function App(props, ImageSource) {
 
   return (
     <div>
-      <div>{/* <Pages /> */}</div>
       <div>
         <HTMLFlipBook
           width={550}
@@ -154,93 +183,58 @@ function App(props, ImageSource) {
           ref={(el) => (flipBook = el)}
         >
           {/* this next page is the cover */}
-          <PageCover className='flex flex-auto text-2xl'>{title[0]}</PageCover>
+          <PageCover className='flex flex-auto'>
+            <div class='title' className='text-9xl justify-center items-center'>
+              {title[0]}
+            </div>
+          </PageCover>
           {/* page number hold the text as children */}
           <Page number={1}>
-            <div className='left'>
-              <div className='text'>{allPages[4]}</div>
-            </div>
-            <div className='right'>
-              <div className='image'>
-                <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            <div className='left flex flex-wrap justify-center items-center'>
+              <div className='image mt-7'>
+                <img src={generatedImage} alt={'ai generation'}></img>
               </div>
+              <div className='text mt-7'>{allPages[5]}</div>
+            </div>
+            {/* <div className='right'>
               <div className='music'>
-                {
-                  (allAiUrls[1] = null ? (
-                    <audio src={allAiUrls[1]} controls></audio>
-                  ) : null)
-                }
+                <audio src={musicUrl} controls></audio>
               </div>
-            </div>
+            </div> */}
           </Page>
           <Page number={2}>
-            <div className='text'>{allPages[4]}</div>
-            <div className='image'>
-              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            <div className='left flex flex-wrap justify-center items-center'>
+              <div className='image mt-7'>
+                <img src={stableDiffusion} alt={'ai generation'}></img>
+              </div>
+              <div className='text mt-7'>{allPages[6]}</div>
             </div>
-            <div className='music'>
+            {/* <div className='music'>
               {allAiUrls[1] !== null ? (
                 <audio src={allAiUrls[1]} controls></audio>
               ) : null}
-            </div>
+            </div> */}
           </Page>
           <Page number={3}>
-            <div className='text'>{allPages[4]}</div>
-            <div className='image'>
-              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            <div className='left flex flex-wrap justify-center items-center'>
+              <div className='image mt-7'>
+                <img src={secondPage} alt={'ai generation'}></img>
+              </div>
+              <div className='text mt-7'>{allPages[7]}</div>
             </div>
-            <div className='music'>
+            {/* <div className='music'>
               {allAiUrls[1] !== null ? (
                 <audio src={allAiUrls[1]} controls></audio>
               ) : null}
-            </div>
+            </div> */}
           </Page>
           {/* this next line is the last page */}
-          <Page number={4}>
-            <div className='text'>{allPages[4]}</div>
-            <div className='image'>
-              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+
+          <PageCover>
+            <div class='title' className='text-9xl justify-center items-center'>
+              THE END
             </div>
-            <div className='music'>
-              {allAiUrls[1] !== null ? (
-                <audio src={allAiUrls[1]} controls></audio>
-              ) : null}
-            </div>
-          </Page>
-          <Page number={5}>
-            <div className='text'>{allPages[4]}</div>
-            <div className='image'>
-              <img src={allAiUrls[0]} alt={'ai generation'}></img>
-            </div>
-            <div className='music'>
-              {allAiUrls[1] !== null ? (
-                <audio src={allAiUrls[1]} controls></audio>
-              ) : null}
-            </div>
-          </Page>
-          <Page number={6}>
-            <div className='text'>{allPages[4]}</div>
-            <div className='image'>
-              <img src={allAiUrls[0]} alt={'ai generation'}></img>
-            </div>
-            <div className='music'>
-              {allAiUrls[1] !== null ? (
-                <audio src={allAiUrls[1]} controls></audio>
-              ) : null}
-            </div>
-          </Page>
-          <Page number={7}>
-            <div className='text'>{allPages[4]}</div>
-            <div className='image'>
-              <img src={allAiUrls[0]} alt={'ai generation'}></img>
-            </div>
-            <div className='music'>
-              {allAiUrls[1] !== null ? (
-                <audio src={allAiUrls[1]} controls></audio>
-              ) : null}
-            </div>
-          </Page>
-          <PageCover>THE END</PageCover>
+          </PageCover>
         </HTMLFlipBook>
         {/* <div>
           <button type='button' onClick={prevButtonClick}>

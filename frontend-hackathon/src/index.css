@@ -3,11 +3,22 @@
 @tailwind utilities;
 
 .text {
-  @apply text-2xl;
+  @apply text-3xl items-center justify-center;
 }
 
 .image {
-  @apply w-32 h-32;
+  /* @apply w-32 h-32; */
+  @apply items-center justify-center;
+  width: 512px;
+  height: 512px;
+  border-radius: 50%;
+}
+
+#title {
+  font-size: 48rem;
+  font-weight: 700;
+  color: #000;
+  text-align: center;
 }
 
 .music {
@@ -20,4 +31,10 @@
 
 .--right {
   @apply float-right;
+}
+
+.page,
+.stf__item,
+.stf__item {
+  background-color: blanchedalmond;
 }

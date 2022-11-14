@@ -37,7 +37,7 @@ replicate.api_key = os.getenv("REPLICATE_API_KEY")
 def generate_prompts():
     # takes in route and title
     reader = Reader("books/alice_wonderland.txt", "Alice in Wonderland", tags=["dreamy","funky","psychedelic trance / psytrance"])
-    chunks = reader.get_chunks(perc=0.05)
+    chunks = reader.get_chunks(perc=0.02)
 
     image_prompts = list()
     audio_prompts = list()
@@ -77,16 +77,18 @@ def generate_music():
 
 
 # generate the prompts for the music generation once
-@app.route('/generate_chunks', methods=['POST', 'GET'])
+@app.route('/generate_chunks', methods=['GET'])
 def generate_chunks():
     # takes in route and title
     reader = Reader("books/alice_wonderland.txt", "Alice in Wonderland", tags=["dreamy","funky","psychedelic trance / psytrance"])
-    chunks = reader.get_chunks(perc=0.05)
+    chunks = reader.get_chunks(perc=0.02)
 
     image_prompts = list()
     audio_prompts = list()
+    time.sleep(3)
     for chunk in chunks:
         image_prompts.append(reader.generate_image_prompt(chunk))
+        time.sleep(3)
         audio_prompts.append(reader.tags + reader.generate_audio_prompt(chunk))
     # "audio":audio_prompt
     prompt_dict = {
@@ -99,9 +101,11 @@ def generate_chunks():
 def queryReplicate(title, image_prompt, audio_prompt):
     # model is set to the stable diffusion model
     model = replicate.models.get("stability-ai/stable-diffusion")
-    input_str = "Make an award winning illustration from the book " + title  + " using the following text: " + image_prompt
+    input_str = "Create a detailed, modern style illustration, with beautiful faces, from the book: " + title  + " using the following text: " + image_prompt
     # output_url is the url to the image
     output_url = model.predict(prompt=input_str)[0]
+    time.sleep(3)
+
     # print the url to the image
     app.logger.info('Replicate output URL', output_url)
     # open the url to the image
@@ -148,7 +152,7 @@ def generate_image_and_music():
 @app.route('/generate_book', methods=['POST', 'GET'])
 def generate_book():
     reader = Reader("books/alice_wonderland.txt", "Alice in Wonderland", tags=["dreamy","funky","psychedelic trance / psytrance"])
-    chunks = reader.get_chunks(perc=0.05)
+    chunks = reader.get_chunks(perc=0.02)
 
     #image_prompts = list()
     #audio_prompts = list()
@@ -158,7 +162,10 @@ def generate_book():
     for chunk in chunks:
 
         url_dict = queryReplicate(reader.title, reader.generate_image_prompt(chunk), reader.tags + reader.generate_audio_prompt(chunk))
+        time.sleep(3)
+
         audio_urls.append(url_dict["music_url"])
+
         image_urls.append(url_dict["output_url"])
 
     allObject = {"chunks":chunks, "audio": audio_urls, "image":image_urls}
