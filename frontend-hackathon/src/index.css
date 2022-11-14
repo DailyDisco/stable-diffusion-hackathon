@@ -13,3 +13,11 @@
 .music {
   @apply w-32 h-32;
 }
+
+.--left {
+  @apply float-left;
+}
+
+.--right {
+  @apply float-right;
+}

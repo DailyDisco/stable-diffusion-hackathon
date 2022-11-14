@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 // import Pages from './Pages';
 import HTMLFlipBook from 'react-pageflip';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // PageCover is the first and last page of the book
 const PageCover = React.forwardRef((props, ref) => {
@@ -24,7 +24,7 @@ const Page = React.forwardRef((props, ref) => {
         <div ref={ref} className='page-text'>
           {props.children}
         </div>
-        {/* <div className='page-footer'>{props.number + 1}</div> */}
+        <div className='page-footer'>{props.number + 1}</div>
       </div>
     </div>
   );
@@ -35,7 +35,6 @@ function App(props, ImageSource) {
   const totalPages = useState(0);
   const [allAiUrls, setAllAiUrls] = useState([]);
   const [page, setPage] = useState(0);
-  // totalPages is the total number of pages in the book
   const [data, setData] = useState(null);
   const [allPages, setAllPages] = useState(0);
   const [allArguments, setAllArguments] = useState('');
@@ -67,9 +66,10 @@ function App(props, ImageSource) {
     setTitle([arr[2]]);
     setAllArguments([...arr]);
     console.log('music tags for each chunk', arr[0][0]);
-    console.log('chunks', arr[1]);
     console.log('text for page', arr[1][0]);
+    console.log('title', arr[2]);
     setAllPages([...arr[1]]);
+    console.log('all pages', allPages);
     return arr;
   };
 
@@ -101,6 +101,7 @@ function App(props, ImageSource) {
         console.log(arr);
         console.log(arr[0]);
         setAllAiUrls([...arr]);
+        console.log('all ai urls', allAiUrls);
         console.log(allAiUrls[0]);
         console.log(allAiUrls[1]);
       })
@@ -112,46 +113,6 @@ function App(props, ImageSource) {
         console.log('Error Data', data);
       });
   };
-  // const fetchAI = async () => {
-  //   // e.preventDefault();
-
-  //   const dataInput = {
-  //     title: allArguments[2],
-  //     image_prompt: allArguments[2],
-  //     audio_prompt: allArguments[0][5][0],
-  //   };
-  //   console.log('type' + typeof dataInput);
-  //   fetch('http://127.0.0.1:5000/generate_image_and_music', {
-  //     method: 'POST',
-  //     headers: new Headers({
-  //       'Content-Type': 'application/json',
-  //       // 'Content-Type': 'multipart/form-data',
-  //     }),
-  //     body: JSON.stringify({
-  //       ...dataInput,
-  //     }),
-  //   })
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       console.log(data);
-  //       return data;
-  //     })
-  //     .then((data) => {
-  //       // loop through the data to turn it into an array
-  //       const arr = Object.keys(data).map((key) => data[key]);
-  //       console.log(arr);
-  //       console.log(arr[0]);
-  //       setAllAiUrls([...arr]);
-  //       console.log(allAiUrls[0]);
-  //     })
-  //     .then((result) => {
-  //       console.log('Success:', result);
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error:', error);
-  //       console.log('Error Data', data);
-  //     });
-  // };
 
   // this runs at the start of the web load and calls the fetchData function, which calls the backend chunks (stories)
   useEffect(() => {
@@ -193,17 +154,23 @@ function App(props, ImageSource) {
           ref={(el) => (flipBook = el)}
         >
           {/* this next page is the cover */}
-          <PageCover className='flex flex-auto text-xl'>{title[0]}</PageCover>
+          <PageCover className='flex flex-auto text-2xl'>{title[0]}</PageCover>
           {/* page number hold the text as children */}
           <Page number={1}>
-            <div className='text'>{allPages[4]}</div>
-            <div className='image'>
-              <img src={allAiUrls[0]} alt={'ai generation'}></img>
+            <div className='left'>
+              <div className='text'>{allPages[4]}</div>
             </div>
-            <div className='music'>
-              {allAiUrls[1] !== null ? (
-                <audio src={allAiUrls[1]} controls></audio>
-              ) : null}
+            <div className='right'>
+              <div className='image'>
+                <img src={allAiUrls[0]} alt={'ai generation'}></img>
+              </div>
+              <div className='music'>
+                {
+                  (allAiUrls[1] = null ? (
+                    <audio src={allAiUrls[1]} controls></audio>
+                  ) : null)
+                }
+              </div>
             </div>
           </Page>
           <Page number={2}>
