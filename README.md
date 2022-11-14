@@ -1,6 +1,7 @@
 # stable-diffusion-hackathon
 
 ## How to run
+ <img src='stable-diffusion-hackathon/ezgif.com-gif-maker.gif' alt='stable diffusion pic' ></img>
 
 ### Backend - Start the API server
 
